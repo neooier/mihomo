@@ -3,10 +3,12 @@ package tuic
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/metacubex/mihomo/adapter/inbound"
 	CN "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/common/sockopt"
@@ -16,8 +18,7 @@ import (
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/transport/socks5"
 	"github.com/metacubex/mihomo/transport/tuic"
-
-	"github.com/gofrs/uuid/v5"
+	tuiic "github.com/metacubex/mihomo/transport/tuic/icmp"
 	"github.com/metacubex/quic-go"
 	"golang.org/x/exp/slices"
 )
@@ -151,15 +152,23 @@ func New(config LC.TuicServer, tunnel C.Tunnel, additions ...inbound.Addition) (
 
 	for _, addr := range strings.Split(config.Listen, ",") {
 		addr := addr
+		var ul net.PacketConn
+		if config.UseICMP {
+			ul, err = tuiic.Connect(config.ICMPIP, net.UDPAddr{}, config.ICMPSymbol, true)
+			fmt.Println(err)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			ul, err = net.ListenPacket("udp", addr)
+			if err != nil {
+				return nil, err
+			}
 
-		ul, err := net.ListenPacket("udp", addr)
-		if err != nil {
-			return nil, err
-		}
-
-		err = sockopt.UDPReuseaddr(ul.(*net.UDPConn))
-		if err != nil {
-			log.Warnln("Failed to Reuse UDP Address: %s", err)
+			err = sockopt.UDPReuseaddr(ul.(*net.UDPConn))
+			if err != nil {
+				log.Warnln("Failed to Reuse UDP Address: %s", err)
+			}
 		}
 
 		sl.udpListeners = append(sl.udpListeners, ul)

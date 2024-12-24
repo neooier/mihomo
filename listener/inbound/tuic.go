@@ -20,6 +20,9 @@ type TuicOption struct {
 	MaxUdpRelayPacketSize int               `inbound:"max-udp-relay-packet-size,omitempty"`
 	CWND                  int               `inbound:"cwnd,omitempty"`
 	MuxOption             MuxOption         `inbound:"mux-option,omitempty"`
+	UseICMP               bool              `inbound:"use-icmp,omitempty"`
+	ICMPSymbol            string            `inbound:"icmp-symbol,omitempty"`
+	ICMPIP                string            `inbound:"icmp-ip,omitempty"`
 }
 
 func (o TuicOption) Equal(config C.InboundConfig) bool {
@@ -55,6 +58,9 @@ func NewTuic(options *TuicOption) (*Tuic, error) {
 			MaxUdpRelayPacketSize: options.MaxUdpRelayPacketSize,
 			CWND:                  options.CWND,
 			MuxOption:             options.MuxOption.Build(),
+			UseICMP:               options.UseICMP,
+			ICMPSymbol:            options.ICMPSymbol,
+			ICMPIP:                options.ICMPIP,
 		},
 	}, nil
 }

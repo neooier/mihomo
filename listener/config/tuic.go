@@ -21,6 +21,10 @@ type TuicServer struct {
 	MaxDatagramFrameSize  int               `yaml:"max-datagram-frame-size" json:"max-datagram-frame-size,omitempty"`
 	CWND                  int               `yaml:"cwnd" json:"cwnd,omitempty"`
 	MuxOption             sing.MuxOption    `yaml:"mux-option" json:"mux-option,omitempty"`
+
+	UseICMP    bool   `yaml:"use-icmp" json:"use-icmp,omitempty"`
+	ICMPSymbol string `yaml:"icmp-symbol" json:"icmp-symbol,omitempty"`
+	ICMPIP     string `yaml:"icmp-ip" json:"icmp-ip,omitempty"`
 }
 
 func (t TuicServer) String() string {

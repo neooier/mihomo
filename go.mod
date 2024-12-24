@@ -118,3 +118,5 @@ require (
 )
 
 replace github.com/sagernet/sing => github.com/metacubex/sing v0.0.0-20241121030428-33b6ebc52000
+
+// replace github.com/metacubex/quic-go => ../quic-go

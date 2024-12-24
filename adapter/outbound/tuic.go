@@ -16,6 +16,7 @@ import (
 	"github.com/metacubex/mihomo/component/resolver"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/transport/tuic"
+	tuiic "github.com/metacubex/mihomo/transport/tuic/icmp"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/metacubex/quic-go"
@@ -62,6 +63,10 @@ type TuicOption struct {
 
 	UDPOverStream        bool `proxy:"udp-over-stream,omitempty"`
 	UDPOverStreamVersion int  `proxy:"udp-over-stream-version,omitempty"`
+
+	UseICMP    bool   `proxy:"use-icmp,omitempty"`
+	ICMPSymbol string `proxy:"icmp-symbol,omitempty"`
+	ICMPIP     string `proxy:"icmp-ip,omitempty"`
 }
 
 // DialContext implements C.ProxyAdapter
@@ -136,10 +141,19 @@ func (t *Tuic) dialWithDialer(ctx context.Context, dialer C.Dialer) (transport *
 	}
 	addr = udpAddr
 	var pc net.PacketConn
-	pc, err = dialer.ListenPacket(ctx, "udp", "", udpAddr.AddrPort())
-	if err != nil {
-		return nil, nil, err
+	if t.option.UseICMP {
+		pc, err = tuiic.Connect(t.option.ICMPIP, *udpAddr, t.option.ICMPSymbol, false)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		// var pc net.PacketConn
+		pc, err = dialer.ListenPacket(ctx, "udp", "", udpAddr.AddrPort())
+		if err != nil {
+			return nil, nil, err
+		}
 	}
+
 	transport = &quic.Transport{Conn: pc}
 	transport.SetCreatedConn(true) // auto close conn
 	transport.SetSingleUse(true)   // auto close transport
