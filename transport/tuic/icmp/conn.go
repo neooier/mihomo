@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"golang.org/x/net/icmp"
@@ -14,6 +15,37 @@ const (
 	SERVER_SYM = byte('S')
 	CLIENT_SYM = byte('C')
 )
+
+type ICMPAddr struct {
+	addr string
+}
+
+func (a ICMPAddr) String() string {
+	return a.addr
+}
+
+func (a ICMPAddr) Network() string {
+	return "icmp"
+}
+
+func (a ICMPAddr) UDPAddr() *net.UDPAddr {
+	return &net.UDPAddr{IP: net.ParseIP(a.addr)}
+}
+
+func (a ICMPAddr) IPAddr() *net.IPAddr {
+	return &net.IPAddr{IP: net.ParseIP(a.addr)}
+}
+
+func NewICMPAddr(addr string) ICMPAddr {
+	if strings.HasPrefix(addr, "[") {
+		addr, _ = strings.CutPrefix(addr, "[")
+	}
+	if strings.HasSuffix(addr, "]") {
+		addr, _ = strings.CutSuffix(addr, "]")
+	}
+	fmt.Printf("NewICMPAddr: %s\n", addr)
+	return ICMPAddr{addr: addr}
+}
 
 func hexStringToFixedByteArray(hexStr string) ([3]byte, error) {
 	var result [3]byte
@@ -36,11 +68,10 @@ func hexStringToFixedByteArray(hexStr string) ([3]byte, error) {
 }
 
 type ClientConn struct {
-	rAddr    net.UDPAddr
-	lAddr    string
+	rAddr    ICMPAddr
+	lAddr    ICMPAddr
 	sym      [3]byte
 	listener net.PacketConn
-	sender   net.Conn
 	isServer bool
 }
 
@@ -63,7 +94,7 @@ func (c ClientConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 			//log.Println("Could not cast body to *icmp.Echo")
 			continue
 		}
-
+		//fmt.Printf("tmp-readfrom:%d %s %d\n\n", time.Now().UnixMilli(), c.rAddr.String(), n)
 		if echoReq.Data[0] != c.sym[0] || echoReq.Data[1] != c.sym[1] || echoReq.Data[2] != c.sym[2] {
 			continue
 		}
@@ -85,7 +116,7 @@ func (c ClientConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 }
 
 func (c ClientConn) WriteTo(p []byte, addr net.Addr) (n int, err error) {
-	//fmt.Printf("writeto:%d %s %d\n\n", time.Now().UnixMilli(), addr.String(), len(p))
+	//fmt.Printf("writeto:%d %s %d\n\n", time.Now().UnixMilli(), c.rAddr.UDPAddr().String(), len(p))
 	var CS_SYM byte
 	if c.isServer {
 		CS_SYM = SERVER_SYM
@@ -104,13 +135,15 @@ func (c ClientConn) WriteTo(p []byte, addr net.Addr) (n int, err error) {
 	//fmt.Printf("%d ?size\n", len(append(append(c.sym[:], CS_SYM), p...)))
 	wm, err := msg.Marshal(nil)
 	if err != nil {
+		//fmt.Printf("Error write to socket:%s\n", err.Error())
 		return 0, err
 	}
 	if c.isServer {
 		_, err = c.listener.WriteTo(wm, addr)
 	} else {
-		_, err = c.sender.Write(wm)
+		_, err = c.listener.WriteTo(wm, c.rAddr.IPAddr())
 	}
+
 	n = len(p)
 	return
 }
@@ -132,54 +165,18 @@ func (c ClientConn) LocalAddr() net.Addr {
 }
 
 func (c ClientConn) SetDeadline(t time.Time) error {
-	err0 := c.listener.SetDeadline(t)
-	if err0 != nil {
-		return err0
-	}
-	if !c.isServer {
-		err1 := c.sender.SetDeadline(t)
-
-		if err1 != nil {
-			return err1
-		}
-	}
-
-	return nil
+	return c.listener.SetDeadline(t)
 }
 
 func (c ClientConn) SetReadDeadline(t time.Time) error {
-	err0 := c.listener.SetReadDeadline(t)
-	if err0 != nil {
-		return err0
-	}
-	if !c.isServer {
-		err1 := c.sender.SetReadDeadline(t)
-
-		if err1 != nil {
-			return err1
-		}
-	}
-
-	return nil
+	return c.listener.SetReadDeadline(t)
 }
 
 func (c ClientConn) SetWriteDeadline(t time.Time) error {
-	err0 := c.listener.SetWriteDeadline(t)
-	if err0 != nil {
-		return err0
-	}
-	if !c.isServer {
-		err1 := c.sender.SetWriteDeadline(t)
-
-		if err1 != nil {
-			return err1
-		}
-	}
-
-	return nil
+	return c.listener.SetWriteDeadline(t)
 }
 
-func Connect(address string, rAddr net.UDPAddr, ssym string, isServer bool) (net.PacketConn, error) {
+func Connect(address ICMPAddr, rAddr ICMPAddr, ssym string, isServer bool) (net.PacketConn, error) {
 	sym, err := hexStringToFixedByteArray(ssym)
 	if err != nil {
 		return nil, err
@@ -188,17 +185,9 @@ func Connect(address string, rAddr net.UDPAddr, ssym string, isServer bool) (net
 	if err != nil {
 		return nil, err
 	}
-	var sender net.Conn
-	if !isServer {
-		sender, err = net.Dial("ip6:ipv6-icmp", rAddr.IP.String())
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	return ClientConn{
 		listener: listener,
-		sender:   sender,
 		rAddr:    rAddr,
 		lAddr:    address,
 		sym:      sym,

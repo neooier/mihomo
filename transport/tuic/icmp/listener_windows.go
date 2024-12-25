@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strings"
 	"syscall"
 	"unsafe"
 
@@ -21,19 +20,13 @@ const (
 	RCVALL_IPLEVEL         = 3
 )
 
-func newICMPListener(address string) (net.PacketConn, error) {
+func newICMPListener(address ICMPAddr) (net.PacketConn, error) {
 	// This is an attempt to work around the problem described here:
 	// https://github.com/golang/go/issues/38427
 
 	// First, get the correct local interface address, as SIO_RCVALL can't be set on a 0.0.0.0 listeners.
 	//fmt.Printf("%s %s", address, address)
-	if strings.HasPrefix(address, "[") {
-		address, _ = strings.CutPrefix(address, "[")
-	}
-	if strings.HasSuffix(address, "]") {
-		address, _ = strings.CutSuffix(address, "]")
-	}
-	dialedConn, err := net.Dial("ip6:ipv6-icmp", address)
+	dialedConn, err := net.Dial("ip6:ipv6-icmp", address.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial: %s", err)
 	}

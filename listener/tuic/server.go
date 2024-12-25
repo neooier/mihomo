@@ -154,7 +154,7 @@ func New(config LC.TuicServer, tunnel C.Tunnel, additions ...inbound.Addition) (
 		addr := addr
 		var ul net.PacketConn
 		if config.UseICMP {
-			ul, err = tuiic.Connect(config.ICMPIP, net.UDPAddr{}, config.ICMPSymbol, true)
+			ul, err = tuiic.Connect(tuiic.NewICMPAddr(config.ICMPIP), tuiic.NewICMPAddr(""), config.ICMPSymbol, true)
 			fmt.Println(err)
 			if err != nil {
 				return nil, err

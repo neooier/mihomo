@@ -8,9 +8,9 @@ import (
 	"golang.org/x/net/icmp"
 )
 
-func newICMPListener(address string) (net.PacketConn, error) {
+func newICMPListener(address ICMPAddr) (net.PacketConn, error) {
 
-	conn, err := icmp.ListenPacket("udp6", address)
+	conn, err := icmp.ListenPacket("udp6", address.String())
 	if err != nil {
 		return nil, err
 	}

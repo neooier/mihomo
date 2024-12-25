@@ -142,7 +142,7 @@ func (t *Tuic) dialWithDialer(ctx context.Context, dialer C.Dialer) (transport *
 	addr = udpAddr
 	var pc net.PacketConn
 	if t.option.UseICMP {
-		pc, err = tuiic.Connect(t.option.ICMPIP, *udpAddr, t.option.ICMPSymbol, false)
+		pc, err = tuiic.Connect(tuiic.NewICMPAddr(t.option.ICMPIP), tuiic.NewICMPAddr(udpAddr.IP.String()), t.option.ICMPSymbol, false)
 		if err != nil {
 			return nil, nil, err
 		}
