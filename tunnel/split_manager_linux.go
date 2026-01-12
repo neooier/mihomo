@@ -43,6 +43,9 @@ func SetSplitParentInterface(name string) {
 }
 
 func ensureSplitProxy(metadata *C.Metadata) (string, error) {
+	if metadata.Type != C.TUN {
+		return "", errSplitSkip
+	}
 	if !metadata.SrcIP.Is4() {
 		return "", fmt.Errorf("split mode only supports IPv4 source addresses")
 	}
