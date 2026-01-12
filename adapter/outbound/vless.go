@@ -252,7 +252,7 @@ func (v *Vless) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.Conn
 
 		return NewConn(c, v), nil
 	}
-	return v.DialContextWithDialer(ctx, dialer.NewDialer(v.DialOptions()...), metadata)
+	return v.DialContextWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(v.DialOptions(), metadata)...), metadata)
 }
 
 // DialContextWithDialer implements C.ProxyAdapter
@@ -301,7 +301,7 @@ func (v *Vless) ListenPacketContext(ctx context.Context, metadata *C.Metadata) (
 
 		return v.ListenPacketOnStreamConn(ctx, c, metadata)
 	}
-	return v.ListenPacketWithDialer(ctx, dialer.NewDialer(v.DialOptions()...), metadata)
+	return v.ListenPacketWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(v.DialOptions(), metadata)...), metadata)
 }
 
 // ListenPacketWithDialer implements C.ProxyAdapter
@@ -481,7 +481,7 @@ func NewVless(option VlessOption) (*Vless, error) {
 	case "grpc":
 		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
 			var err error
-			var cDialer C.Dialer = dialer.NewDialer(v.DialOptions()...)
+			var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(v.DialOptions(), metadata)...)
 			if len(v.option.DialerProxy) > 0 {
 				cDialer, err = proxydialer.NewByName(v.option.DialerProxy, cDialer)
 				if err != nil {

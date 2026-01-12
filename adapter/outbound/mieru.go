@@ -130,7 +130,7 @@ func (m *Mieru) ensureClientIsRunning() error {
 	}
 
 	// Create a dialer and add it to the client config, before starting the client.
-	var dialer C.Dialer = dialer.NewDialer(m.DialOptions()...)
+	var dialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(m.DialOptions(), metadata)...)
 	var err error
 	if len(m.option.DialerProxy) > 0 {
 		dialer, err = proxydialer.NewByName(m.option.DialerProxy, dialer)

@@ -196,7 +196,7 @@ func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.Con
 
 		return NewConn(c, t), nil
 	}
-	return t.DialContextWithDialer(ctx, dialer.NewDialer(t.DialOptions()...), metadata)
+	return t.DialContextWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(t.DialOptions(), metadata)...), metadata)
 }
 
 // DialContextWithDialer implements C.ProxyAdapter
@@ -250,7 +250,7 @@ func (t *Trojan) ListenPacketContext(ctx context.Context, metadata *C.Metadata) 
 		pc := trojan.NewPacketConn(c)
 		return newPacketConn(pc, t), err
 	}
-	return t.ListenPacketWithDialer(ctx, dialer.NewDialer(t.DialOptions()...), metadata)
+	return t.ListenPacketWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(t.DialOptions(), metadata)...), metadata)
 }
 
 // ListenPacketWithDialer implements C.ProxyAdapter
@@ -356,7 +356,7 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 	if option.Network == "grpc" {
 		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
 			var err error
-			var cDialer C.Dialer = dialer.NewDialer(t.DialOptions()...)
+			var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(t.DialOptions(), metadata)...)
 			if len(t.option.DialerProxy) > 0 {
 				cDialer, err = proxydialer.NewByName(t.option.DialerProxy, cDialer)
 				if err != nil {

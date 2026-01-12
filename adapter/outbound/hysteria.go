@@ -75,7 +75,7 @@ func (h *Hysteria) genHdc(ctx context.Context) utils.PacketDialer {
 		ctx: context.Background(),
 		hyDialer: func(network string, rAddr net.Addr) (net.PacketConn, error) {
 			var err error
-			var cDialer C.Dialer = dialer.NewDialer(h.DialOptions()...)
+			var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(h.DialOptions(), metadata)...)
 			if len(h.option.DialerProxy) > 0 {
 				cDialer, err = proxydialer.NewByName(h.option.DialerProxy, cDialer)
 				if err != nil {

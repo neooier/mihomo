@@ -57,6 +57,7 @@ func (m *splitManager) getOrCreate(srcIP netip.Addr) (string, error) {
 	defer m.mu.Unlock()
 
 	if entry, ok := m.entries[srcIP]; ok && time.Until(entry.expires) > 30*time.Second {
+		log.Debugln("[SPLIT] reuse interface %s for %s", entry.ifaceName, srcIP)
 		return entry.ifaceName, nil
 	}
 
@@ -69,7 +70,8 @@ func (m *splitManager) getOrCreate(srcIP netip.Addr) (string, error) {
 		return "", fmt.Errorf("query parent interface %s: %w", m.parentIface, err)
 	}
 
-	ifaceName := fmt.Sprintf("%s-%x", m.parentIface, srcIP.As4()[3])
+	srcBytes := srcIP.As4()
+	ifaceName := fmt.Sprintf("%s-%02x%02x%02x%02x", m.parentIface, srcBytes[0], srcBytes[1], srcBytes[2], srcBytes[3])
 	macvlan := &netlink.Macvlan{
 		LinkAttrs: netlink.LinkAttrs{
 			Name:        ifaceName,
@@ -92,6 +94,7 @@ func (m *splitManager) getOrCreate(srcIP netip.Addr) (string, error) {
 		ifaceName: ifaceName,
 		expires:   time.Now().Add(time.Hour),
 	}
+	log.Debugln("[SPLIT] assigned interface %s for %s", ifaceName, srcIP)
 	return ifaceName, nil
 }
 

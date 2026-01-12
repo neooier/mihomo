@@ -406,6 +406,7 @@ func resolveMetadata(metadata *C.Metadata) (proxy C.Proxy, rule C.Rule, err erro
 		splitIface, err = ensureSplitProxy(metadata)
 		if err != nil {
 			if errors.Is(err, errSplitSkip) {
+				log.Debugln("[SPLIT] skip interface selection for %s", metadata.SourceDetail())
 				err = nil
 			} else {
 				return
@@ -423,6 +424,7 @@ func resolveMetadata(metadata *C.Metadata) (proxy C.Proxy, rule C.Rule, err erro
 	}
 
 	if splitIface != "" {
+		log.Debugln("[SPLIT] use interface %s for %s", splitIface, metadata.SourceDetail())
 		metadata.OutboundInterface = splitIface
 	}
 	return

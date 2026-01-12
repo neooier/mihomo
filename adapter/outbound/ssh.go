@@ -44,7 +44,7 @@ type SshOption struct {
 }
 
 func (s *Ssh) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.Conn, err error) {
-	var cDialer C.Dialer = dialer.NewDialer(s.DialOptions()...)
+	var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(s.DialOptions(), metadata)...)
 	if len(s.option.DialerProxy) > 0 {
 		cDialer, err = proxydialer.NewByName(s.option.DialerProxy, cDialer)
 		if err != nil {
