@@ -210,7 +210,7 @@ func NewSnell(option SnellOption) (*Snell, error) {
 	if option.Version == snell.Version2 {
 		s.pool = snell.NewPool(func(ctx context.Context) (*snell.Snell, error) {
 			var err error
-			var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(s.DialOptions(), metadata)...)
+			var cDialer C.Dialer = dialer.NewDialer(s.DialOptions()...)
 			if len(s.option.DialerProxy) > 0 {
 				cDialer, err = proxydialer.NewByName(s.option.DialerProxy, cDialer)
 				if err != nil {

@@ -486,7 +486,7 @@ func NewVmess(option VmessOption) (*Vmess, error) {
 	case "grpc":
 		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
 			var err error
-			var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(v.DialOptions(), metadata)...)
+			var cDialer C.Dialer = dialer.NewDialer(v.DialOptions()...)
 			if len(v.option.DialerProxy) > 0 {
 				cDialer, err = proxydialer.NewByName(v.option.DialerProxy, cDialer)
 				if err != nil {

@@ -356,7 +356,7 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 	if option.Network == "grpc" {
 		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
 			var err error
-			var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(t.DialOptions(), metadata)...)
+			var cDialer C.Dialer = dialer.NewDialer(t.DialOptions()...)
 			if len(t.option.DialerProxy) > 0 {
 				cDialer, err = proxydialer.NewByName(t.option.DialerProxy, cDialer)
 				if err != nil {
