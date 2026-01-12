@@ -65,6 +65,8 @@ var (
 	sniffingEnable    = false
 
 	ruleUpdateCallback = utils.NewCallback[P.RuleProvider]()
+
+	splitEnabled = atomic.NewBool(false)
 )
 
 type tunnel struct{}
@@ -263,6 +265,14 @@ func SetMode(m TunnelMode) {
 	mode = m
 }
 
+func SetSplitEnabled(enabled bool) {
+	splitEnabled.Store(enabled)
+}
+
+func SplitEnabled() bool {
+	return splitEnabled.Load()
+}
+
 func FindProcessMode() process.FindProcessMode {
 	return findProcessMode.Load()
 }
@@ -391,14 +401,29 @@ func resolveMetadata(metadata *C.Metadata) (proxy C.Proxy, rule C.Rule, err erro
 		helper.FindProcess = nil
 	}
 
+	var splitIface string
+	if SplitEnabled() {
+		splitIface, err = ensureSplitProxy(metadata)
+		if err != nil {
+			if errors.Is(err, errSplitSkip) {
+				err = nil
+			} else {
+				return
+			}
+		}
+	}
+
 	switch mode {
 	case Direct:
 		proxy = proxies["DIRECT"]
 	case Global:
 		proxy = proxies["GLOBAL"]
-	// Rule
 	default:
 		proxy, rule, err = match(metadata, helper)
+	}
+
+	if splitIface != "" {
+		metadata.OutboundInterface = splitIface
 	}
 	return
 }

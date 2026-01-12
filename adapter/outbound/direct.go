@@ -26,6 +26,9 @@ func (d *Direct) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn,
 		return nil, err
 	}
 	opts := d.DialOptions()
+	if metadata.OutboundInterface != "" {
+		opts = append(opts, dialer.WithInterface(metadata.OutboundInterface))
+	}
 	opts = append(opts, dialer.WithResolver(resolver.DirectHostResolver))
 	c, err := dialer.DialContext(ctx, "tcp", metadata.RemoteAddress(), opts...)
 	if err != nil {
@@ -42,7 +45,11 @@ func (d *Direct) ListenPacketContext(ctx context.Context, metadata *C.Metadata) 
 	if err := d.ResolveUDP(ctx, metadata); err != nil {
 		return nil, err
 	}
-	pc, err := dialer.NewDialer(d.DialOptions()...).ListenPacket(ctx, "udp", "", metadata.AddrPort())
+	opts := d.DialOptions()
+	if metadata.OutboundInterface != "" {
+		opts = append(opts, dialer.WithInterface(metadata.OutboundInterface))
+	}
+	pc, err := dialer.NewDialer(opts...).ListenPacket(ctx, "udp", "", metadata.AddrPort())
 	if err != nil {
 		return nil, err
 	}
