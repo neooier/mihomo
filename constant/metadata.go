@@ -196,6 +196,7 @@ type Metadata struct {
 	SpecialRules string     `json:"specialRules"`
 	RemoteDst    string     `json:"remoteDestination"`
 	DSCP         uint8      `json:"dscp"`
+	OutboundInterface string `json:"outboundInterface"`
 
 	RawSrcAddr net.Addr `json:"-"`
 	RawDstAddr net.Addr `json:"-"`

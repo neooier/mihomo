@@ -174,6 +174,7 @@ func GetGeneral() *config.General {
 		TCPConcurrent:           dialer.GetTcpConcurrent(),
 		FindProcessMode:         tunnel.FindProcessMode(),
 		Sniffing:                tunnel.IsSniffing(),
+		Split:                   tunnel.SplitEnabled(),
 		GlobalClientFingerprint: tlsC.GetGlobalFingerprint(),
 		GlobalUA:                mihomoHttp.UA(),
 		ETagSupport:             resource.ETag(),
@@ -411,6 +412,8 @@ func updateGeneral(general *config.General, logging bool) {
 	if logging && general.RoutingMark > 0 {
 		log.Infoln("Use routing mark: %#x", general.RoutingMark)
 	}
+	tunnel.SetSplitParentInterface(general.Interface)
+	tunnel.SetSplitEnabled(general.Split)
 
 	iface.FlushCache()
 

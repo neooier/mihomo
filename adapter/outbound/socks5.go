@@ -69,7 +69,7 @@ func (ss *Socks5) StreamConnContext(ctx context.Context, c net.Conn, metadata *C
 
 // DialContext implements C.ProxyAdapter
 func (ss *Socks5) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.Conn, err error) {
-	return ss.DialContextWithDialer(ctx, dialer.NewDialer(ss.DialOptions()...), metadata)
+	return ss.DialContextWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(ss.DialOptions(), metadata)...), metadata)
 }
 
 // DialContextWithDialer implements C.ProxyAdapter
@@ -104,7 +104,7 @@ func (ss *Socks5) SupportWithDialer() C.NetWork {
 
 // ListenPacketContext implements C.ProxyAdapter
 func (ss *Socks5) ListenPacketContext(ctx context.Context, metadata *C.Metadata) (_ C.PacketConn, err error) {
-	var cDialer C.Dialer = dialer.NewDialer(ss.DialOptions()...)
+	var cDialer C.Dialer = dialer.NewDialer(AppendOutboundInterface(ss.DialOptions(), metadata)...)
 	if len(ss.option.DialerProxy) > 0 {
 		cDialer, err = proxydialer.NewByName(ss.option.DialerProxy, cDialer)
 		if err != nil {

@@ -48,6 +48,7 @@ type General struct {
 	UnifiedDelay            bool                    `json:"unified-delay"`
 	LogLevel                log.LogLevel            `json:"log-level"`
 	IPv6                    bool                    `json:"ipv6"`
+	Split                   bool                    `json:"split"`
 	Interface               string                  `json:"interface-name"`
 	RoutingMark             int                     `json:"routing-mark"`
 	GeoXUrl                 GeoXUrl                 `json:"geox-url"`
@@ -403,6 +404,7 @@ type RawConfig struct {
 	UnifiedDelay            bool                    `yaml:"unified-delay" json:"unified-delay"`
 	LogLevel                log.LogLevel            `yaml:"log-level" json:"log-level"`
 	IPv6                    bool                    `yaml:"ipv6" json:"ipv6"`
+	Split                   bool                    `yaml:"split" json:"split"`
 	ExternalController      string                  `yaml:"external-controller" json:"external-controller"`
 	ExternalControllerPipe  string                  `yaml:"external-controller-pipe" json:"external-controller-pipe"`
 	ExternalControllerUnix  string                  `yaml:"external-controller-unix" json:"external-controller-unix"`
@@ -468,6 +470,7 @@ func DefaultRawConfig() *RawConfig {
 		BindAddress:       "*",
 		LanAllowedIPs:     []netip.Prefix{netip.MustParsePrefix("0.0.0.0/0"), netip.MustParsePrefix("::/0")},
 		IPv6:              true,
+		Split:             false,
 		Mode:              T.Rule,
 		GeoAutoUpdate:     false,
 		GeoUpdateInterval: 24,
@@ -754,6 +757,7 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 		Mode:         cfg.Mode,
 		LogLevel:     cfg.LogLevel,
 		IPv6:         cfg.IPv6,
+		Split:        cfg.Split,
 		Interface:    cfg.Interface,
 		RoutingMark:  cfg.RoutingMark,
 		GeoXUrl: GeoXUrl{

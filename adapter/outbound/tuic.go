@@ -70,7 +70,7 @@ type TuicOption struct {
 
 // DialContext implements C.ProxyAdapter
 func (t *Tuic) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
-	return t.DialContextWithDialer(ctx, dialer.NewDialer(t.DialOptions()...), metadata)
+	return t.DialContextWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(t.DialOptions(), metadata)...), metadata)
 }
 
 // DialContextWithDialer implements C.ProxyAdapter
@@ -84,7 +84,7 @@ func (t *Tuic) DialContextWithDialer(ctx context.Context, dialer C.Dialer, metad
 
 // ListenPacketContext implements C.ProxyAdapter
 func (t *Tuic) ListenPacketContext(ctx context.Context, metadata *C.Metadata) (_ C.PacketConn, err error) {
-	return t.ListenPacketWithDialer(ctx, dialer.NewDialer(t.DialOptions()...), metadata)
+	return t.ListenPacketWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(t.DialOptions(), metadata)...), metadata)
 }
 
 // ListenPacketWithDialer implements C.ProxyAdapter

@@ -57,6 +57,7 @@ type configSchema struct {
 	TcpConcurrent     *bool                    `json:"tcp-concurrent"`
 	FindProcessMode   *process.FindProcessMode `json:"find-process-mode"`
 	InterfaceName     *string                  `json:"interface-name"`
+	Split             *bool                    `json:"split"`
 }
 
 type tunSchema struct {

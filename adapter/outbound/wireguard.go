@@ -560,7 +560,7 @@ func (w *WireGuard) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.
 		if w.resolver != nil {
 			r = w.resolver
 		}
-		options := w.DialOptions()
+		options := AppendOutboundInterface(w.DialOptions(), metadata)
 		options = append(options, dialer.WithResolver(r))
 		options = append(options, dialer.WithNetDialer(wgNetDialer{tunDevice: w.tunDevice}))
 		conn, err = dialer.NewDialer(options...).DialContext(ctx, "tcp", metadata.RemoteAddress())

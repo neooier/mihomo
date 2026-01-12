@@ -23,6 +23,13 @@ type ProxyAdapter interface {
 	ResolveUDP(ctx context.Context, metadata *C.Metadata) error
 }
 
+func AppendOutboundInterface(opts []dialer.Option, metadata *C.Metadata) []dialer.Option {
+	if metadata != nil && metadata.OutboundInterface != "" {
+		return append(opts, dialer.WithInterface(metadata.OutboundInterface))
+	}
+	return opts
+}
+
 type Base struct {
 	name   string
 	addr   string

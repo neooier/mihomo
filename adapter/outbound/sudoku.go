@@ -46,7 +46,7 @@ type SudokuOption struct {
 
 // DialContext implements C.ProxyAdapter
 func (s *Sudoku) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
-	return s.DialContextWithDialer(ctx, dialer.NewDialer(s.DialOptions()...), metadata)
+	return s.DialContextWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(s.DialOptions(), metadata)...), metadata)
 }
 
 // DialContextWithDialer implements C.ProxyAdapter

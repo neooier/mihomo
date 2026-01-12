@@ -191,7 +191,7 @@ func (ss *ShadowSocks) StreamConnContext(ctx context.Context, c net.Conn, metada
 
 // DialContext implements C.ProxyAdapter
 func (ss *ShadowSocks) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.Conn, err error) {
-	return ss.DialContextWithDialer(ctx, dialer.NewDialer(ss.DialOptions()...), metadata)
+	return ss.DialContextWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(ss.DialOptions(), metadata)...), metadata)
 }
 
 // DialContextWithDialer implements C.ProxyAdapter
@@ -237,7 +237,7 @@ func (ss *ShadowSocks) DialContextWithDialer(ctx context.Context, dialer C.Diale
 
 // ListenPacketContext implements C.ProxyAdapter
 func (ss *ShadowSocks) ListenPacketContext(ctx context.Context, metadata *C.Metadata) (C.PacketConn, error) {
-	return ss.ListenPacketWithDialer(ctx, dialer.NewDialer(ss.DialOptions()...), metadata)
+	return ss.ListenPacketWithDialer(ctx, dialer.NewDialer(AppendOutboundInterface(ss.DialOptions(), metadata)...), metadata)
 }
 
 // ListenPacketWithDialer implements C.ProxyAdapter
