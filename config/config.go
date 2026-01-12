@@ -49,6 +49,8 @@ type General struct {
 	LogLevel                log.LogLevel            `json:"log-level"`
 	IPv6                    bool                    `json:"ipv6"`
 	Interface               string                  `json:"interface-name"`
+	Split                   bool                    `json:"split"`
+	LocalInterfaceIP        netip.Addr              `json:"local-interface-ip"`
 	RoutingMark             int                     `json:"routing-mark"`
 	GeoXUrl                 GeoXUrl                 `json:"geox-url"`
 	GeoAutoUpdate           bool                    `json:"geo-auto-update"`
@@ -414,6 +416,8 @@ type RawConfig struct {
 	ExternalDohServer       string                  `yaml:"external-doh-server" json:"external-doh-server"`
 	Secret                  string                  `yaml:"secret" json:"secret"`
 	Interface               string                  `yaml:"interface-name" json:"interface-name"`
+	Split                   bool                    `yaml:"split" json:"split"`
+	LocalInterfaceIP        netip.Addr              `yaml:"local-interface-ip" json:"local-interface-ip"`
 	RoutingMark             int                     `yaml:"routing-mark" json:"routing-mark"`
 	Tunnels                 []LC.Tunnel             `yaml:"tunnels" json:"tunnels"`
 	GeoAutoUpdate           bool                    `yaml:"geo-auto-update" json:"geo-auto-update"`
@@ -750,12 +754,14 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 			InboundTfo:        cfg.InboundTfo,
 			InboundMPTCP:      cfg.InboundMPTCP,
 		},
-		UnifiedDelay: cfg.UnifiedDelay,
-		Mode:         cfg.Mode,
-		LogLevel:     cfg.LogLevel,
-		IPv6:         cfg.IPv6,
-		Interface:    cfg.Interface,
-		RoutingMark:  cfg.RoutingMark,
+		UnifiedDelay:     cfg.UnifiedDelay,
+		Mode:             cfg.Mode,
+		LogLevel:         cfg.LogLevel,
+		IPv6:             cfg.IPv6,
+		Interface:        cfg.Interface,
+		Split:            cfg.Split,
+		LocalInterfaceIP: cfg.LocalInterfaceIP,
+		RoutingMark:      cfg.RoutingMark,
 		GeoXUrl: GeoXUrl{
 			GeoIp:   cfg.GeoXUrl.GeoIp,
 			Mmdb:    cfg.GeoXUrl.Mmdb,

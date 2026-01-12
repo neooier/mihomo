@@ -11,6 +11,7 @@ import (
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/resolver"
+	"github.com/metacubex/mihomo/component/split"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel/statistic"
 )
@@ -52,6 +53,8 @@ func (d *DNSDialer) DialContext(ctx context.Context, network, addr string) (net.
 			metadata.DstIP = dstIP
 		}
 	}
+
+	split.EnsureForMetadata(metadata)
 
 	if proxyAdapter == nil && len(proxyName) != 0 {
 		if proxyName == DnsRespectRules {
@@ -149,6 +152,8 @@ func (d *DNSDialer) ListenPacket(ctx context.Context, network, addr string) (net
 		}
 		metadata.DstIP = dstIP
 	}
+
+	split.EnsureForMetadata(metadata)
 
 	var rule C.Rule
 	if proxyAdapter == nil {

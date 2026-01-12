@@ -26,6 +26,7 @@ import (
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/component/resource"
 	"github.com/metacubex/mihomo/component/sniffer"
+	"github.com/metacubex/mihomo/component/split"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	"github.com/metacubex/mihomo/component/trie"
 	"github.com/metacubex/mihomo/component/updater"
@@ -154,12 +155,14 @@ func GetGeneral() *config.General {
 			InboundTfo:        inbound.Tfo(),
 			InboundMPTCP:      inbound.MPTCP(),
 		},
-		Mode:         tunnel.Mode(),
-		UnifiedDelay: adapter.UnifiedDelay.Load(),
-		LogLevel:     log.Level(),
-		IPv6:         !resolver.DisableIPv6,
-		Interface:    dialer.DefaultInterface.Load(),
-		RoutingMark:  int(dialer.DefaultRoutingMark.Load()),
+		Mode:             tunnel.Mode(),
+		UnifiedDelay:     adapter.UnifiedDelay.Load(),
+		LogLevel:         log.Level(),
+		IPv6:             !resolver.DisableIPv6,
+		Interface:        dialer.DefaultInterface.Load(),
+		Split:            split.Enabled(),
+		LocalInterfaceIP: split.LocalInterfaceIP(),
+		RoutingMark:      int(dialer.DefaultRoutingMark.Load()),
 		GeoXUrl: config.GeoXUrl{
 			GeoIp:   geodata.GeoIpUrl(),
 			Mmdb:    geodata.MmdbUrl(),
@@ -411,6 +414,7 @@ func updateGeneral(general *config.General, logging bool) {
 	if logging && general.RoutingMark > 0 {
 		log.Infoln("Use routing mark: %#x", general.RoutingMark)
 	}
+	split.Configure(general.Split, general.Interface, general.LocalInterfaceIP)
 
 	iface.FlushCache()
 
@@ -531,6 +535,7 @@ func updateIPTables(cfg *config.Config) {
 func Shutdown() {
 	listener.Cleanup()
 	tproxy.CleanupTProxyIPTables()
+	split.Cleanup()
 	resolver.StoreFakePoolState()
 
 	log.Warnln("Mihomo shutting down")

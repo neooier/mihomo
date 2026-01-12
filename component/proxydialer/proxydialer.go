@@ -9,6 +9,7 @@ import (
 
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/dialer"
+	"github.com/metacubex/mihomo/component/split"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
 	"github.com/metacubex/mihomo/tunnel/statistic"
@@ -37,6 +38,7 @@ func (p proxyDialer) DialContext(ctx context.Context, network, address string) (
 	if err := currentMeta.SetRemoteAddress(address); err != nil {
 		return nil, err
 	}
+	split.EnsureForMetadata(currentMeta)
 	if strings.Contains(network, "udp") { // using in wireguard outbound
 		pc, err := p.listenPacket(ctx, currentMeta)
 		if err != nil {
@@ -68,6 +70,7 @@ func (p proxyDialer) DialContext(ctx context.Context, network, address string) (
 
 func (p proxyDialer) ListenPacket(ctx context.Context, network, address string, rAddrPort netip.AddrPort) (net.PacketConn, error) {
 	currentMeta := &C.Metadata{Type: C.INNER, DstIP: rAddrPort.Addr(), DstPort: rAddrPort.Port()}
+	split.EnsureForMetadata(currentMeta)
 	return p.listenPacket(ctx, currentMeta)
 }
 
