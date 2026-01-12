@@ -98,7 +98,7 @@ func (m *splitManager) getOrCreate(srcIP netip.Addr) (string, error) {
 
 func (m *splitManager) runUDHCPC(ctx context.Context, srcIP netip.Addr, ifaceName string) {
 	for {
-		cmd := exec.CommandContext(ctx, "udhcpc", "-f", "-i", ifaceName, "-q")
+		cmd := exec.CommandContext(ctx, "udhcpc", "-f", "-i", ifaceName)
 		cmd.Stdout = io.Discard
 		cmd.Stderr = io.Discard
 		log.Infoln("[SPLIT] start udhcpc on %s for %s", ifaceName, srcIP)
