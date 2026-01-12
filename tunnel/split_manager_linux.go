@@ -35,6 +35,9 @@ var globalSplitManager = &splitManager{
 }
 
 var errSplitSkip = errors.New("split skip")
+var splitAllowedPrefixes = []netip.Prefix{
+	netip.MustParsePrefix("192.168.100.0/24"),
+}
 
 func SetSplitParentInterface(name string) {
 	globalSplitManager.mu.Lock()
@@ -43,13 +46,25 @@ func SetSplitParentInterface(name string) {
 }
 
 func ensureSplitProxy(metadata *C.Metadata) (string, error) {
-	if !metadata.SrcIP.Is4() {
+	srcIP := metadata.SrcIP.Unmap()
+	if !srcIP.Is4() {
 		return "", fmt.Errorf("split mode only supports IPv4 source addresses")
+	}
+	allowed := false
+	for _, prefix := range splitAllowedPrefixes {
+		if prefix.Contains(srcIP) {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		log.Debugln("[SPLIT] skip interface selection for %s (source not in split allowlist)", metadata.SourceDetail())
+		return "", errSplitSkip
 	}
 	if metadata.DstPort == 53 || metadata.Type == C.INNER {
 		return "", errSplitSkip
 	}
-	return globalSplitManager.getOrCreate(metadata.SrcIP)
+	return globalSplitManager.getOrCreate(srcIP)
 }
 
 func (m *splitManager) getOrCreate(srcIP netip.Addr) (string, error) {
