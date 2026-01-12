@@ -9,6 +9,7 @@ import (
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/process"
 	"github.com/metacubex/mihomo/component/resolver"
+	"github.com/metacubex/mihomo/component/split"
 	"github.com/metacubex/mihomo/component/updater"
 	"github.com/metacubex/mihomo/config"
 	C "github.com/metacubex/mihomo/constant"
@@ -57,6 +58,8 @@ type configSchema struct {
 	TcpConcurrent     *bool                    `json:"tcp-concurrent"`
 	FindProcessMode   *process.FindProcessMode `json:"find-process-mode"`
 	InterfaceName     *string                  `json:"interface-name"`
+	Split             *bool                    `json:"split"`
+	LocalInterfaceIP  *netip.Addr              `json:"local-interface-ip"`
 }
 
 type tunSchema struct {
@@ -335,6 +338,22 @@ func patchConfigs(w http.ResponseWriter, r *http.Request) {
 
 	if general.InterfaceName != nil {
 		dialer.DefaultInterface.Store(*general.InterfaceName)
+	}
+	if general.Split != nil || general.LocalInterfaceIP != nil || general.InterfaceName != nil {
+		current := executor.GetGeneral()
+		splitEnabled := current.Split
+		interfaceName := current.Interface
+		localInterfaceIP := current.LocalInterfaceIP
+		if general.Split != nil {
+			splitEnabled = *general.Split
+		}
+		if general.InterfaceName != nil {
+			interfaceName = *general.InterfaceName
+		}
+		if general.LocalInterfaceIP != nil {
+			localInterfaceIP = *general.LocalInterfaceIP
+		}
+		split.Configure(splitEnabled, interfaceName, localInterfaceIP)
 	}
 
 	ports := listener.GetPorts()
